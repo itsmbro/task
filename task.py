@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import calendar
 import datetime
+import os
+from datetime import datetime
 
 # Funzione per il Calendario
 def show_calendar():
@@ -37,9 +39,16 @@ def show_notebook():
     # Salva la nota su un file di testo
     if st.button("Salva nota"):
         if note != "":
-            with open("blocco_note.txt", "w") as file:
-                file.write(note)
-            st.success("Nota salvata con successo!")
+            # Crea un nome dinamico per il file con data e ora
+            file_name = f"nota_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+            
+            # Salva la nota in un file
+            try:
+                with open(file_name, "w") as file:
+                    file.write(note)
+                st.success(f"Nota salvata con successo! Nome file: {file_name}")
+            except Exception as e:
+                st.error(f"Errore nel salvataggio della nota: {e}")
         else:
             st.warning("Non hai scritto nulla!")
 
