@@ -3,6 +3,25 @@ import pandas as pd
 import calendar
 import datetime
 import os
+import json
+
+# Funzione per salvare la nota nel file JSON
+def save_note_to_json(note_content, file_name):
+    # Controlla se esiste il file notes.json
+    if os.path.exists("notes.json"):
+        with open("notes.json", "r") as f:
+            notes_data = json.load(f)
+    else:
+        notes_data = []
+
+    # Aggiungi la nuova nota
+    notes_data.append({"file_name": file_name, "note": note_content})
+
+    # Salva tutte le note nel file JSON
+    with open("notes.json", "w") as f:
+        json.dump(notes_data, f, indent=4)
+
+
 
 # Funzione per il Calendario
 def show_calendar():
@@ -34,7 +53,6 @@ def show_calendar():
 
 
 
-# Funzione per il Blocco Note
 def show_notebook():
     st.title("Blocco Note")
     note = st.text_area("Scrivi la tua nota", "", height=200)
@@ -45,15 +63,20 @@ def show_notebook():
             # Crea un nome dinamico per il file con data e ora
             file_name = f"nota_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
             
-            # Salva la nota in un file
+            # Salva la nota in un file di testo
             try:
                 with open(file_name, "w") as file:
                     file.write(note)
                 st.success(f"Nota salvata con successo! Nome file: {file_name}")
+                
+                # Salva la nota anche nel file JSON
+                save_note_to_json(note, file_name)
+                
             except Exception as e:
                 st.error(f"Errore nel salvataggio della nota: {e}")
         else:
             st.warning("Non hai scritto nulla!")
+
 
 # Funzione per la To-Do List
 def show_todo_list():
@@ -82,13 +105,30 @@ def show_todo_list():
             else:
                 st.write(f"{idx}. {task}")
 
+def show_saved_notes():
+    st.title("Note Salvate")
+
+    # Leggi le note salvate dal file JSON
+    if os.path.exists("notes.json"):
+        with open("notes.json", "r") as f:
+            notes_data = json.load(f)
+        
+        if notes_data:
+            for note in notes_data:
+                st.subheader(f"Nota: {note['file_name']}")
+                st.text_area("Contenuto della nota", note['note'], height=150, disabled=True)
+                st.write("---")
+        else:
+            st.warning("Non ci sono note salvate.")
+    else:
+        st.warning("Nessuna nota salvata.")
 
 
 
 
 def main():
     st.sidebar.title("Navigazione")
-    tab = st.sidebar.radio("Scegli una funzionalità", ("Calendario", "Blocco Note", "To-Do List"))
+    tab = st.sidebar.radio("Scegli una funzionalità", ("Calendario", "Blocco Note", "To-Do List", "Note Salvate"))
     
     if tab == "Calendario":
         show_calendar()
@@ -96,6 +136,9 @@ def main():
         show_notebook()
     elif tab == "To-Do List":
         show_todo_list()
+    elif tab == "Note Salvate":
+        show_saved_notes()
+
 
 if __name__ == "__main__":
     main()
