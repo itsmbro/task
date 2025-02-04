@@ -43,7 +43,7 @@ def show_notebook():
     if st.button("Salva nota"):
         if note != "":
             # Crea un nome dinamico per il file con data e ora
-            file_name = f"nota_{datetime.time.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
+            file_name = f"nota_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
             
             # Salva la nota in un file
             try:
