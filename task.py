@@ -114,14 +114,37 @@ def show_saved_notes():
             notes_data = json.load(f)
         
         if notes_data:
-            for note in notes_data:
+            for idx, note in enumerate(notes_data):
+                # Visualizza il nome del file e il contenuto della nota
                 st.subheader(f"Nota: {note['file_name']}")
                 st.text_area("Contenuto della nota", note['note'], height=150, disabled=True)
+
+                # Pulsante per eliminare la nota
+                if st.button(f"Elimina {note['file_name']}", key=idx):
+                    # Elimina la nota dal file di testo
+                    try:
+                        os.remove(note['file_name'])  # Rimuove il file di testo
+                        st.success(f"File '{note['file_name']}' eliminato con successo.")
+                    except Exception as e:
+                        st.error(f"Errore nell'eliminare il file: {e}")
+                    
+                    # Elimina la nota dal file JSON
+                    notes_data = [n for n in notes_data if n['file_name'] != note['file_name']]
+
+                    # Riscrive il file JSON senza la nota eliminata
+                    with open("notes.json", "w") as f:
+                        json.dump(notes_data, f, indent=4)
+
+                    st.success(f"Nota '{note['file_name']}' eliminata con successo!")
+
+                    # Ricarica le note salvate
+                    break
                 st.write("---")
         else:
             st.warning("Non ci sono note salvate.")
     else:
         st.warning("Nessuna nota salvata.")
+
 
 
 
