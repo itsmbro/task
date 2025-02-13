@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import openai
 import json
@@ -64,8 +63,10 @@ def generate_initial_prompt(task_code):
     return (
         "Sei uno sviluppatore esperto. Il tuo compito è aggiornare e migliorare uno script Python chiamato task.py.\n"
         "Il codice attuale di task.py è il seguente:\n\n"
+        "```python"
         "00000000\n"
         f"{task_code}\n"
+        "```"
         "00000000\n\n"
         "Se vuoi modificare parti del codice, rispondi con il formato esatto:\n\n"
         "00000000\n"
@@ -76,7 +77,7 @@ def generate_initial_prompt(task_code):
         "2. Includere eventuali miglioramenti o nuove funzionalità richieste dall'utente.\n"
         "3. Non rimuovere sezioni essenziali per il funzionamento dello script.\n\n"
         "Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
-        "Ti notifico che stai scrivendo gli apici e la scritta Python prima del codice so che lo fai di default se non riesci a non farlo allora Gli zeri della formattazione all’interno del codice cosicché io dallo script Python riuscirò a estrapolare solo lo script aggiornato. Ora procediamo con le modifiche!"
+        "è importante che includi sempre nel codice, all'inizio e alla fine, gli zeri come ho scritto io.Ora procediamo con le modifiche!"
     )
 
 # Funzione per aggiornare task.py dalle risposte di ChatGPT
@@ -150,4 +151,3 @@ random_words = ['Ciao', 'Python', 'Data', 'Streamlit', 'Machine Learning', 'Inte
 
 if st.button('Mostra parola random'):
     st.write(random.choice(random_words))
-```
