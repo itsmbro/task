@@ -5,6 +5,7 @@ import requests
 import base64
 import re
 import random
+import logging
 
 # Configurazione API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -15,6 +16,9 @@ GITHUB_USER = "itsmbro"
 GITHUB_REPO = "task"
 GITHUB_BRANCH = "main"
 GITHUB_FILE_PATH = "task.py"
+
+# Configurazione logging
+logging.basicConfig(filename='task_update.log', level=logging.INFO)
 
 # Funzione per caricare il file task.py da GitHub
 def load_task_file():
@@ -100,6 +104,9 @@ user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
 
 if st.button("🔄 Genera aggiornamento"):
     if user_input:
+        # Logghiamo la richiesta di modifica
+        logging.info(f'Richiesta di modifica: {user_input}')
+        
         # Creiamo la richiesta per ChatGPT
         messages = [
             {"role": "system", "content": generate_initial_prompt(task_code)},
@@ -147,7 +154,3 @@ if st.button('Mostra parola random'):
 # Numero random
 if st.button('Mostra numero random'):
     st.write(random.randint(1, 100))
-
-# Mostra "Ciao, come stai?"
-if st.button('Saluta'):
-    st.write("Ciao, come stai?")
