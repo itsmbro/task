@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import openai
 import json
@@ -100,8 +101,8 @@ st.title("🔄 Task.py Updater")
 task_code = load_task_file()
 
 # Mostriamo il codice attuale
-#st.subheader("📄 Codice attuale di task.py:")
-#st.code(task_code, language="python")
+st.subheader("📄 Codice attuale di task.py:")
+st.code(task_code, language="python")
 
 # Input utente
 user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
@@ -126,8 +127,8 @@ if st.button("🔄 Genera aggiornamento"):
             updated_code = update_task_file_from_response(bot_response, task_code)
 
             # Mostriamo il nuovo codice
-            #st.subheader("🔄 Nuovo codice generato:")
-            #st.code(updated_code, language="python")
+            st.subheader("🔄 Nuovo codice generato:")
+            st.code(updated_code, language="python")
 
         except Exception as e:
             st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
@@ -151,3 +152,8 @@ random_words = ['Ciao', 'Python', 'Data', 'Streamlit', 'Machine Learning', 'Inte
 
 if st.button('Mostra parola random'):
     st.write(random.choice(random_words))
+
+# Numero random
+if st.button('Mostra numero random'):
+    st.write(random.randint(1, 100))
+```
