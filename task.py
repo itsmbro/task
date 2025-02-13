@@ -6,6 +6,7 @@ import base64
 import re
 import random
 import logging
+import emoji  # Aggiungiamo il modulo emoji
 
 # Configurazione API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -113,6 +114,13 @@ num2 = st.number_input('Inserisci il secondo numero:', value=0)
 if st.button("Somma"):
     result = calculate_sum(num1, num2)
     st.success(f'Il risultato della somma è: {result}')
+
+# Funzione per generare un emoji casuale
+def generate_random_emoji():
+    return random.choice(list(emoji.UNICODE_EMOJI.values()))
+
+if st.button("Genera Emoji"):
+    st.success(generate_random_emoji())
 
 if st.button("🔄 Genera aggiornamento"):
     if user_input:
