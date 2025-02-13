@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import openai
 import json
@@ -138,4 +138,3 @@ random_phrases = ['Ciao, come posso aiutarti oggi?', 'Spero che tu stia passando
 
 if st.button('Mostra frase random'):
     st.write(random.choice(random_phrases))
-```
