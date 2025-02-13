@@ -75,7 +75,7 @@ def generate_initial_prompt(task_code):
         "2. Includere eventuali miglioramenti o nuove funzionalità richieste dall'utente.\n"
         "3. Non rimuovere sezioni essenziali per il funzionamento dello script.\n\n"
         "Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
-        "come ultima cosa ti notifico che quando tu generi il codice per mostrarlo con un formato diverso utilizzi questa sintassi: '''python <codice aggiornato> '''. In questo modo l'aggiornamento dello script includerà anche gli apici e la scritta Python che però non deve essere inclusa quindi evita di metterla  In questo modo l'aggiornamento dello script includerà anche gli apici e la scritta Python che però non deve essere inclusa quindi evita di metterla. Ora procediamo con le modifiche!"
+        "Ti notifico che stai scrivendo gli apici e la scritta Python prima del codice so che lo fai di default se non riesci a non farlo allora Gli zeri della formattazione all’interno del codice cosicché io dallo script Python riuscirò a estrapolare solo lo script aggiornato. Ora procediamo con le modifiche!"
     )
 
 # Funzione per aggiornare task.py dalle risposte di ChatGPT
