@@ -1,167 +1,132 @@
 import streamlit as st
-import pandas as pd
-import calendar
-import datetime
-import os
+import openai
 import json
+import requests
+import base64
+import re
 
-# Funzione per salvare la nota nel file JSON
-def save_note_to_json(note_content, file_name):
-    # Controlla se esiste il file notes.json
-    if os.path.exists("notes.json"):
-        with open("notes.json", "r") as f:
-            notes_data = json.load(f)
+# Configurazione API
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+
+# Configurazione GitHub
+GITHUB_USER = "itsmbro"
+GITHUB_REPO = "task"
+GITHUB_BRANCH = "main"
+GITHUB_FILE_PATH = "task.py"
+
+# Funzione per caricare il file task.py da GitHub
+def load_task_file():
+    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{GITHUB_FILE_PATH}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.text
     else:
-        notes_data = []
+        st.error(f"Errore nel caricamento di {GITHUB_FILE_PATH} da GitHub.")
+        return ""
 
-    # Aggiungi la nuova nota
-    notes_data.append({"file_name": file_name, "note": note_content})
+# Funzione per aggiornare il file task.py su GitHub
+def save_task_file(updated_content):
+    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{GITHUB_FILE_PATH}"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
 
-    # Salva tutte le note nel file JSON
-    with open("notes.json", "w") as f:
-        json.dump(notes_data, f, indent=4)
+    # Otteniamo il valore SHA del file attuale
+    response = requests.get(url, headers=headers)
+    sha = response.json().get("sha") if response.status_code == 200 else None
 
+    # Encoding in base64
+    content_base64 = base64.b64encode(updated_content.encode()).decode()
 
-
-# Funzione per il Calendario
-def show_calendar():
-    st.title("Calendario")
+    data = {
+        "message": "Aggiornamento automatico di task.py",
+        "content": content_base64,
+        "branch": GITHUB_BRANCH
+    }
     
-    # Mostra mese corrente
-    today = datetime.date.today()  # Usa datetime.date per ottenere la data odierna
-    month = st.selectbox("Seleziona mese", list(calendar.month_name[1:]), index=today.month - 1)
-    year = st.selectbox("Seleziona anno", list(range(today.year, today.year + 5)), index=0)
-    
-    month_number = list(calendar.month_name[1:]).index(month) + 1
-    st.write(f"Calendario per {month} {year}")
-    
-    # Crea la struttura del calendario
-    cal = calendar.monthcalendar(year, month_number)
-    days_of_week = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"]
-    
-    # Organizza i dati in un DataFrame
-    calendar_data = []
-    for week in cal:
-        calendar_data.append([str(day) if day != 0 else "" for day in week])
-    
-    df = pd.DataFrame(calendar_data, columns=days_of_week)
-    
-    # Mostra il calendario in una tabella interattiva
-    st.dataframe(df)
+    if sha:
+        data["sha"] = sha  # Necessario per aggiornare il file esistente
 
-# Le altre funzioni rimangono invariate
+    response = requests.put(url, headers=headers, json=data)
 
-
-
-def show_notebook():
-    st.title("Blocco Note")
-    note = st.text_area("Scrivi la tua nota", "", height=200)
-    
-    # Salva la nota su un file di testo
-    if st.button("Salva nota"):
-        if note != "":
-            # Crea un nome dinamico per il file con data e ora
-            file_name = f"nota_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt"
-            
-            # Salva la nota in un file di testo
-            try:
-                with open(file_name, "w") as file:
-                    file.write(note)
-                st.success(f"Nota salvata con successo! Nome file: {file_name}")
-                
-                # Salva la nota anche nel file JSON
-                save_note_to_json(note, file_name)
-                
-            except Exception as e:
-                st.error(f"Errore nel salvataggio della nota: {e}")
-        else:
-            st.warning("Non hai scritto nulla!")
-
-
-# Funzione per la To-Do List
-def show_todo_list():
-    st.title("To-Do List")
-    
-    # Aggiungi una nuova voce alla lista
-    task = st.text_input("Aggiungi un'attività", "")
-    
-    if st.button("Aggiungi alla lista"):
-        if task != "":
-            if "tasks" not in st.session_state:
-                st.session_state["tasks"] = []
-            st.session_state["tasks"].append(task)
-            st.success("Attività aggiunta con successo!")
-        else:
-            st.warning("Scrivi un'attività da aggiungere!")
-    
-    # Visualizza le attività
-    if "tasks" in st.session_state:
-        st.write("### Attività da fare:")
-        for idx, task in enumerate(st.session_state["tasks"], 1):
-            task_done = st.checkbox(f"Completata {task}", key=idx)
-            if task_done:
-                st.session_state["tasks"].remove(task)
-                st.success(f"Attività '{task}' completata!")
-            else:
-                st.write(f"{idx}. {task}")
-
-def show_saved_notes():
-    st.title("Note Salvate")
-
-    # Leggi le note salvate dal file JSON
-    if os.path.exists("notes.json"):
-        with open("notes.json", "r") as f:
-            notes_data = json.load(f)
-        
-        if notes_data:
-            for idx, note in enumerate(notes_data):
-                # Visualizza il nome del file e il contenuto della nota
-                st.subheader(f"Nota: {note['file_name']}")
-                st.text_area("Contenuto della nota", note['note'], height=150, disabled=True)
-
-                # Pulsante per eliminare la nota
-                if st.button(f"Elimina {note['file_name']}", key=idx):
-                    # Elimina la nota dal file di testo
-                    try:
-                        os.remove(note['file_name'])  # Rimuove il file di testo
-                        st.success(f"File '{note['file_name']}' eliminato con successo.")
-                    except Exception as e:
-                        st.error(f"Errore nell'eliminare il file: {e}")
-                    
-                    # Elimina la nota dal file JSON
-                    notes_data = [n for n in notes_data if n['file_name'] != note['file_name']]
-
-                    # Riscrive il file JSON senza la nota eliminata
-                    with open("notes.json", "w") as f:
-                        json.dump(notes_data, f, indent=4)
-
-                    st.success(f"Nota '{note['file_name']}' eliminata con successo!")
-
-                    # Ricarica le note salvate
-                    break
-                st.write("---")
-        else:
-            st.warning("Non ci sono note salvate.")
+    if response.status_code in [200, 201]:
+        st.success("✅ task.py aggiornato con successo su GitHub!")
     else:
-        st.warning("Nessuna nota salvata.")
+        st.error(f"Errore nell'aggiornamento di GitHub: {response.json()}")
 
+# Funzione per generare il prompt iniziale
+def generate_initial_prompt(task_code):
+    return (
+        "Sei uno sviluppatore esperto. Il tuo compito è aggiornare e migliorare uno script Python chiamato task.py.\n"
+        "Il codice attuale di task.py è il seguente:\n\n"
+        "00000000\n"
+        f"{task_code}\n"
+        "00000000\n\n"
+        "Se vuoi modificare parti del codice, rispondi con il formato esatto:\n\n"
+        "00000000\n"
+        "<NUOVO CODICE COMPLETO DA SOSTITUIRE>\n"
+        "00000000\n\n"
+        "Il codice generato deve:\n"
+        "1. Mantenere le funzioni necessarie per interagire con ChatGPT.\n"
+        "2. Includere eventuali miglioramenti o nuove funzionalità richieste dall'utente.\n"
+        "3. Non rimuovere sezioni essenziali per il funzionamento dello script.\n\n"
+        "Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
+        "Ora procediamo con le modifiche!"
+    )
 
+# Funzione per aggiornare task.py dalle risposte di ChatGPT
+def update_task_file_from_response(response_text, task_code):
+    match = re.search(r'00000000\n(.*?)\n00000000', response_text, re.DOTALL)
+    if match:
+        try:
+            new_code = match.group(1).strip()
+            if new_code.lower() != "nessuna modifica necessaria":
+                save_task_file(new_code)
+            return new_code
+        except Exception as e:
+            st.error(f"Errore nell'analisi del codice generato: {e}")
+    return task_code
 
+# UI con Streamlit
+st.title("🔄 Task.py Updater")
 
+# Carichiamo task.py da GitHub
+task_code = load_task_file()
 
-def main():
-    st.sidebar.title("Navigazione")
-    tab = st.sidebar.radio("Scegli una funzionalità", ("Calendario", "Blocco Note", "To-Do List", "Note Salvate"))
-    
-    if tab == "Calendario":
-        show_calendar()
-    elif tab == "Blocco Note":
-        show_notebook()
-    elif tab == "To-Do List":
-        show_todo_list()
-    elif tab == "Note Salvate":
-        show_saved_notes()
+# Mostriamo il codice attuale
+st.subheader("📄 Codice attuale di task.py:")
+st.code(task_code, language="python")
 
+# Input utente
+user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
 
-if __name__ == "__main__":
-    main()
+if st.button("🔄 Genera aggiornamento"):
+    if user_input:
+        # Creiamo la richiesta per ChatGPT
+        messages = [
+            {"role": "system", "content": generate_initial_prompt(task_code)},
+            {"role": "user", "content": user_input}
+        ]
+
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=messages,
+                temperature=0.7
+            )
+            bot_response = response["choices"][0]["message"]["content"]
+
+            # Aggiorniamo il file se necessario
+            updated_code = update_task_file_from_response(bot_response, task_code)
+
+            # Mostriamo il nuovo codice
+            st.subheader("🔄 Nuovo codice generato:")
+            st.code(updated_code, language="python")
+
+        except Exception as e:
+            st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
+    else:
+        st.warning("Inserisci una richiesta per aggiornare il codice.")
