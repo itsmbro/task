@@ -1,4 +1,4 @@
-
+```python
 import streamlit as st
 import openai
 import json
@@ -21,7 +21,6 @@ GITHUB_FILE_PATH = "task.py"
 def load_task_file():
     url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{GITHUB_FILE_PATH}"
     response = requests.get(url)
-
     if response.status_code == 200:
         return response.text
     else:
@@ -138,3 +137,10 @@ random_phrases = ['Ciao, come posso aiutarti oggi?', 'Spero che tu stia passando
 
 if st.button('Mostra frase random'):
     st.write(random.choice(random_phrases))
+
+# Emoji random
+random_emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇']
+
+if st.button('Mostra emoji random'):
+    st.write(random.choice(random_emojis))
+```
