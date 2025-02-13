@@ -1,9 +1,11 @@
+```python
 import streamlit as st
 import openai
 import json
 import requests
 import base64
 import re
+import random
 
 # Configurazione API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -103,6 +105,15 @@ st.code(task_code, language="python")
 # Input utente
 user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
 
+# Frasi simpatiche
+funny_phrases = [
+    "Perché non c'è bisogno di preoccuparsi? Perché preoccuparsi non ha mai risolto nulla!",
+    "La vita è come una bicicletta. Per mantenere l'equilibrio, devi continuare a muoverti.",
+    "La vita è breve. Sorridi mentre hai ancora i denti.",
+    "Se la vita ti dà limoni, mettili in acqua e bevi più acqua. L'acqua è buona!",
+    "Sei così fantastico che quando passi accanto a un cimitero, i morti si risvegliano solo per applaudirti."
+]
+
 if st.button("🔄 Genera aggiornamento"):
     if user_input:
         # Creiamo la richiesta per ChatGPT
@@ -130,3 +141,8 @@ if st.button("🔄 Genera aggiornamento"):
             st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
     else:
         st.warning("Inserisci una richiesta per aggiornare il codice.")
+
+if st.button("🎉 Mostra una frase simpatica"):
+    st.info(random.choice(funny_phrases))
+
+```
