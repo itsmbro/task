@@ -1,9 +1,11 @@
+```python
 import streamlit as st
 import openai
 import json
 import requests
 import base64
 import re
+import random
 
 # Configurazione API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -130,3 +132,10 @@ if st.button("🔄 Genera aggiornamento"):
             st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
     else:
         st.warning("Inserisci una richiesta per aggiornare il codice.")
+
+# Frasi random
+random_phrases = ['Ciao, come posso aiutarti oggi?', 'Spero che tu stia passando una bella giornata!', 'Ricorda, ogni giorno è una nuova opportunità.', 'Sei sulla strada giusta, continua così!', 'Non dimenticare di fare una pausa e rilassarti ogni tanto.']
+
+if st.button('Mostra frase random'):
+    st.write(random.choice(random_phrases))
+```
