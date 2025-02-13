@@ -1,90 +1,78 @@
-```python
 import streamlit as st
 import openai
 import json
 import requests
 import base64
 import re
-import random
 
-# Configurazione API
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Configurazione delle credenziali dai secrets di Streamlit
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+GITHUB_USER = "itsmbro"  # Sostituisci con il tuo username GitHub
+GITHUB_REPO = "task"  # Nome del repository GitHub
+GITHUB_BRANCH = "main"  # Nome del branch
+TASK_FILE_PATH = "task.py"  # File Python da modificare
 
-# Configurazione GitHub
-GITHUB_USER = "itsmbro"
-GITHUB_REPO = "task"
-GITHUB_BRANCH = "main"
-GITHUB_FILE_PATH = "task.py"
+# Configurazione API OpenAI
+openai.api_key = OPENAI_API_KEY
 
-# Funzione per caricare il file task.py da GitHub
+# Funzione per caricare il file Python da GitHub
 def load_task_file():
-    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{GITHUB_FILE_PATH}"
+    url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{TASK_FILE_PATH}"
     response = requests.get(url)
-
+    
     if response.status_code == 200:
         return response.text
     else:
-        st.error(f"Errore nel caricamento di {GITHUB_FILE_PATH} da GitHub.")
+        st.error("Errore nel caricamento del file da GitHub.")
         return ""
 
-# Funzione per aggiornare il file task.py su GitHub
-def save_task_file(updated_content):
-    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{GITHUB_FILE_PATH}"
+# Funzione per salvare il file Python su GitHub
+def save_task_file(updated_code):
+    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{TASK_FILE_PATH}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
 
-    # Otteniamo il valore SHA del file attuale
+    # Ottiene il contenuto attuale per recuperare lo SHA del file
     response = requests.get(url, headers=headers)
     sha = response.json().get("sha") if response.status_code == 200 else None
 
-    # Encoding in base64
-    content_base64 = base64.b64encode(updated_content.encode()).decode()
+    # Converte il codice aggiornato in base64
+    json_base64 = base64.b64encode(updated_code.encode()).decode()
 
     data = {
-        "message": "Aggiornamento automatico di task.py",
-        "content": content_base64,
+        "message": "Aggiornamento task.py",
+        "content": json_base64,
         "branch": GITHUB_BRANCH
     }
     
     if sha:
-        data["sha"] = sha  # Necessario per aggiornare il file esistente
+        data["sha"] = sha  # Necessario per modificare un file esistente
 
+    # Effettua la richiesta di aggiornamento
     response = requests.put(url, headers=headers, json=data)
 
     if response.status_code in [200, 201]:
-        st.success("✅ task.py aggiornato con successo su GitHub!")
+        st.success("File aggiornato con successo su GitHub!")
     else:
-        st.error(f"Errore nell'aggiornamento di GitHub: {response.json()}")
+        st.error(f"Errore aggiornamento GitHub: {response.json()}")
 
-# Funzione per generare il prompt iniziale
-def generate_initial_prompt(task_code):
-    return (
-        "Sei uno sviluppatore esperto. Il tuo compito è aggiornare e migliorare uno script Python chiamato task.py.\n"
-        "Il codice attuale di task.py è il seguente:\n\n"
-        "00000000\n"
-        f"{task_code}\n"
-        "00000000\n\n"
-        "Se vuoi modificare parti del codice, rispondi con il formato esatto:\n\n"
-        "00000000\n"
-        "<NUOVO CODICE COMPLETO DA SOSTITUIRE>\n"
-        "00000000\n\n"
-        "Il codice generato deve:\n"
-        "1. Mantenere le funzioni necessarie per interagire con ChatGPT.\n"
-        "2. Includere eventuali miglioramenti o nuove funzionalità richieste dall'utente.\n"
-        "3. Non rimuovere sezioni essenziali per il funzionamento dello script.\n\n"
-        "Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
-        "Ora procediamo con le modifiche!"
-    )
+# Funzione per ripulire il codice da Markdown e commenti indesiderati
+def clean_code_from_markdown(code):
+    """Rimuove i blocchi Markdown e commenti generati da GPT"""
+    code = re.sub(r"```python\n(.*?)\n```", r"\1", code, flags=re.DOTALL)  # Rimuove ```python ... ```
+    code = re.sub(r"```(.*?)\n```", r"\1", code, flags=re.DOTALL)  # Rimuove ``` ... ```
+    code = re.sub(r"(?i)codice corretto e aggiornato", "", code).strip()  # Rimuove commenti generati da GPT
+    return code
 
-# Funzione per aggiornare task.py dalle risposte di ChatGPT
+# Funzione per aggiornare il codice in base alla risposta di ChatGPT
 def update_task_file_from_response(response_text, task_code):
     match = re.search(r'00000000\n(.*?)\n00000000', response_text, re.DOTALL)
     if match:
         try:
-            new_code = match.group(1).strip()
+            new_code = clean_code_from_markdown(match.group(1).strip())
             if new_code.lower() != "nessuna modifica necessaria":
                 save_task_file(new_code)
             return new_code
@@ -92,57 +80,57 @@ def update_task_file_from_response(response_text, task_code):
             st.error(f"Errore nell'analisi del codice generato: {e}")
     return task_code
 
-# UI con Streamlit
-st.title("🔄 Task.py Updater")
+# Genera il prompt iniziale per ChatGPT
+def generate_initial_prompt(task_code):
+    return (
+        "Sei un assistente esperto in sviluppo software. Devi aggiornare il file Python `task.py`.\n"
+        "Il file attuale contiene il seguente codice:\n\n"
+        "00000000\n"
+        f"{task_code}\n"
+        "00000000\n\n"
+        "Quando ti viene chiesto di modificarlo, restituisci SOLO il codice aggiornato, senza altre spiegazioni.\n"
+        "Assicurati che il codice restituito sia completo e funzioni correttamente.\n"
+        "Non alterare parti non richieste e non fornire altro testo oltre al codice.\n"
+        "Ora iniziamo!"
+    )
 
-# Carichiamo task.py da GitHub
+# Carica il file da GitHub
 task_code = load_task_file()
+initial_prompt = generate_initial_prompt(task_code)
 
-# Mostriamo il codice attuale
-st.subheader("📄 Codice attuale di task.py:")
-st.code(task_code, language="python")
+# Inizializza la sessione della chat
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "system", "content": initial_prompt}]
 
-# Input utente
-user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
+# Mostra la cronologia dei messaggi
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# Frasi simpatiche
-funny_phrases = [
-    "Perché non c'è bisogno di preoccuparsi? Perché preoccuparsi non ha mai risolto nulla!",
-    "La vita è come una bicicletta. Per mantenere l'equilibrio, devi continuare a muoverti.",
-    "La vita è breve. Sorridi mentre hai ancora i denti.",
-    "Se la vita ti dà limoni, mettili in acqua e bevi più acqua. L'acqua è buona!",
-    "Sei così fantastico che quando passi accanto a un cimitero, i morti si risvegliano solo per applaudirti."
-]
+# Input utente per richieste di modifica
+if user_input := st.chat_input("Richiedi una modifica al codice..."):
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-if st.button("🔄 Genera aggiornamento"):
-    if user_input:
-        # Creiamo la richiesta per ChatGPT
-        messages = [
-            {"role": "system", "content": generate_initial_prompt(task_code)},
-            {"role": "user", "content": user_input}
-        ]
+    # Richiesta a ChatGPT
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=st.session_state.messages,
+            temperature=0.7
+        )
+        bot_response = response["choices"][0]["message"]["content"]
 
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=messages,
-                temperature=0.7
-            )
-            bot_response = response["choices"][0]["message"]["content"]
+        # Aggiorna il file se necessario
+        updated_code = update_task_file_from_response(bot_response, task_code)
 
-            # Aggiorniamo il file se necessario
-            updated_code = update_task_file_from_response(bot_response, task_code)
+        # Mostra la risposta nella chat
+        with st.chat_message("assistant"):
+            st.markdown(f"```python\n{updated_code}\n```")
 
-            # Mostriamo il nuovo codice
-            st.subheader("🔄 Nuovo codice generato:")
-            st.code(updated_code, language="python")
+        # Salva il messaggio nella sessione
+        st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
-        except Exception as e:
-            st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
-    else:
-        st.warning("Inserisci una richiesta per aggiornare il codice.")
-
-if st.button("🎉 Mostra una frase simpatica"):
-    st.info(random.choice(funny_phrases))
-
-```
+    except Exception as e:
+        st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
