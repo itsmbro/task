@@ -64,28 +64,28 @@ def generate_initial_prompt(task_code):
     return (
         "Sei uno sviluppatore esperto. Il tuo compito è aggiornare e migliorare uno script Python chiamato task.py.\n"
         "Il codice attuale di task.py è il seguente:\n\n"
-        "```python"
-        "00000000\n"
+        #"```python"
+        #"00000000\n"
         f"{task_code}\n"
-        "```"
-        "00000000\n\n"
-        "Se vuoi modificare parti del codice, rispondi con il formato esatto:\n\n"
-        "```python\n\n"
-        "00000000\n"
-        "<NUOVO CODICE COMPLETO DA SOSTITUIRE>\n"
-        "00000000\n\n"
-        "```\n\n"
+        #"```"
+        #"00000000\n\n"
+        "Se vuoi modificare parti del codice, rispondi solo con il codice completo aggiornato.\n\n"
+        #"```python\n\n"
+        #"00000000\n"
+        #"<NUOVO CODICE COMPLETO DA SOSTITUIRE>\n"
+        #"00000000\n\n"
+        #"```\n\n"
         "Il codice generato deve:\n"
         "1. Mantenere le funzioni necessarie per interagire con ChatGPT.\n"
         "2. Includere eventuali miglioramenti o nuove funzionalità richieste dall'utente.\n"
         "3. Non rimuovere sezioni essenziali per il funzionamento dello script.\n\n"
-        "Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
-        "è importante che includi sempre nel codice, all'inizio e alla fine, gli zeri come ho scritto io.Ora procediamo con le modifiche!"
+        #"Se il codice attuale è corretto, rispondi solo con 'Nessuna modifica necessaria'.\n\n"
+        "Ora procediamo con le modifiche!"
     )
 
 # Funzione per aggiornare task.py dalle risposte di ChatGPT
 def update_task_file_from_response(response_text, task_code):
-    match = re.search(r'00000000\n(.*?)\n00000000', response_text, re.DOTALL)
+    match = re.search(r'```python\n(.*?)\n```', response_text, re.DOTALL)
     if match:
         try:
             new_code = match.group(1).strip()
