@@ -146,7 +146,7 @@ if st.button('Mostra emoji random'):
     st.write(random.choice(random_emojis))
 
 # Parole random
-random_words = ['Mela', 'Casa', 'Libro', 'Computer', 'Python', 'Streamlit', 'OpenAI', 'GitHub', 'API', 'Json', 'Requests', 'Base64', 'Re', 'Random']
+random_words = ['Ciao', 'Python', 'Data', 'Streamlit', 'Machine Learning', 'Intelligenza Artificiale', 'Modello', 'Dati', 'Funzione', 'Script']
 
 if st.button('Mostra parola random'):
     st.write(random.choice(random_words))
