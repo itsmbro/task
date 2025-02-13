@@ -102,6 +102,18 @@ st.code(task_code, language="python")
 # Input utente
 user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
 
+# Funzione per calcolare la somma di due numeri
+def calculate_sum(num1, num2):
+    return num1 + num2
+
+# Input per la somma
+num1 = st.number_input('Inserisci il primo numero:', value=0)
+num2 = st.number_input('Inserisci il secondo numero:', value=0)
+
+if st.button("Somma"):
+    result = calculate_sum(num1, num2)
+    st.success(f'Il risultato della somma è: {result}')
+
 if st.button("🔄 Genera aggiornamento"):
     if user_input:
         # Logghiamo la richiesta di modifica
@@ -132,25 +144,3 @@ if st.button("🔄 Genera aggiornamento"):
             st.error(f"Errore nella comunicazione con OpenAI: {str(e)}")
     else:
         st.warning("Inserisci una richiesta per aggiornare il codice.")
-
-# Frasi random
-random_phrases = ['Ciao, come posso aiutarti oggi?', 'Spero che tu stia passando una bella giornata!', 'Ricorda, ogni giorno è una nuova opportunità.', 'Sei sulla strada giusta, continua così!', 'Non dimenticare di fare una pausa e rilassarti ogni tanto.']
-
-if st.button('Mostra frase random'):
-    st.write(random.choice(random_phrases))
-
-# Emoji random
-random_emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈', '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾', '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾']
-
-if st.button('Mostra emoji random'):
-    st.write(random.choice(random_emojis))
-
-# Parole random
-random_words = ['Ciao', 'Python', 'Data', 'Streamlit', 'Machine Learning', 'Intelligenza Artificiale', 'Modello', 'Dati', 'Funzione', 'Script']
-
-if st.button('Mostra parola random'):
-    st.write(random.choice(random_words))
-
-# Numero random
-if st.button('Mostra numero random'):
-    st.write(random.randint(1, 100))
