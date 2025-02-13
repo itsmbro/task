@@ -6,7 +6,6 @@ import base64
 import re
 import random
 import logging
-import emoji  # Aggiungiamo il modulo emoji
 
 # Configurazione API
 openai.api_key = st.secrets["OPENAI_API_KEY"]
@@ -20,6 +19,9 @@ GITHUB_FILE_PATH = "task.py"
 
 # Configurazione logging
 logging.basicConfig(filename='task_update.log', level=logging.INFO)
+
+# Creazione della lista di emoji
+emoji_list = ["✅", "🔄", "📄", "✍️"]
 
 # Funzione per caricare il file task.py da GitHub
 def load_task_file():
@@ -52,14 +54,14 @@ def save_task_file(updated_content):
         "content": content_base64,
         "branch": GITHUB_BRANCH
     }
-    
+
     if sha:
         data["sha"] = sha  # Necessario per aggiornare il file esistente
 
     response = requests.put(url, headers=headers, json=data)
 
     if response.status_code in [200, 201]:
-        st.success("✅ task.py aggiornato con successo su GitHub!")
+        st.success(f"{random.choice(emoji_list)} task.py aggiornato con successo su GitHub!")
     else:
         st.error(f"Errore nell'aggiornamento di GitHub: {response.json()}")
 
@@ -91,17 +93,17 @@ def update_task_file_from_response(response_text, task_code):
     return task_code
 
 # UI con Streamlit
-st.title("🔄 Task.py Updater")
+st.title(f"{random.choice(emoji_list)} Task.py Updater")
 
 # Carichiamo task.py da GitHub
 task_code = load_task_file()
 
 # Mostriamo il codice attuale
-st.subheader("📄 Codice attuale di task.py:")
+st.subheader(f"{random.choice(emoji_list)} Codice attuale di task.py:")
 st.code(task_code, language="python")
 
 # Input utente
-user_input = st.text_area("✍️ Inserisci la tua richiesta di modifica:", "")
+user_input = st.text_area(f"{random.choice(emoji_list)} Inserisci la tua richiesta di modifica:", "")
 
 # Funzione per calcolare la somma di due numeri
 def calculate_sum(num1, num2):
@@ -115,14 +117,7 @@ if st.button("Somma"):
     result = calculate_sum(num1, num2)
     st.success(f'Il risultato della somma è: {result}')
 
-# Funzione per generare un emoji casuale
-def generate_random_emoji():
-    return random.choice(list(emoji.UNICODE_EMOJI.values()))
-
-if st.button("Genera Emoji"):
-    st.success(generate_random_emoji())
-
-if st.button("🔄 Genera aggiornamento"):
+if st.button(f"{random.choice(emoji_list)} Genera aggiornamento"):
     if user_input:
         # Logghiamo la richiesta di modifica
         logging.info(f'Richiesta di modifica: {user_input}')
@@ -145,7 +140,7 @@ if st.button("🔄 Genera aggiornamento"):
             updated_code = update_task_file_from_response(bot_response, task_code)
 
             # Mostriamo il nuovo codice
-            st.subheader("🔄 Nuovo codice generato:")
+            st.subheader(f"{random.choice(emoji_list)} Nuovo codice generato:")
             st.code(updated_code, language="python")
 
         except Exception as e:
