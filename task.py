@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import openai
 import json
@@ -158,4 +158,3 @@ if st.button('Mostra parola random'):
 # Numero random
 if st.button('Mostra numero random'):
     st.write(random.randint(1, 100))
-```
