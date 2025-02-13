@@ -1,3 +1,4 @@
+```python
 import streamlit as st
 import openai
 import json
@@ -143,3 +144,10 @@ random_emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣',
 
 if st.button('Mostra emoji random'):
     st.write(random.choice(random_emojis))
+
+# Parole random
+random_words = ['Mela', 'Casa', 'Libro', 'Computer', 'Python', 'Streamlit', 'OpenAI', 'GitHub', 'API', 'Json', 'Requests', 'Base64', 'Re', 'Random']
+
+if st.button('Mostra parola random'):
+    st.write(random.choice(random_words))
+```
